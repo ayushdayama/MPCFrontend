@@ -1,3 +1,25 @@
+/* Responsive row for login/signup buttons */
+.login-btn-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .login-btn-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+/* Ultra-wide screens: make card even wider and center it */
+@media (min-width: 1600px) {
+  .card {
+    max-width: 1400px;
+    padding-left: 96px;
+    padding-right: 96px;
+  }
+}
 #root {
   width: 100%;
   min-height: 100vh;
@@ -35,16 +57,24 @@
 }
 
 /* Menstrual Cycle Theme - Full Screen */
+body,
 .menstrual-theme {
   background: linear-gradient(135deg, #fff0f6 0%, #ffe3e3 100%);
   min-height: 100vh;
   width: 100vw;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
   margin: 0;
+}
+
+.menstrual-theme {
+  display: contents;
+  align-items: center;
+  width: 100vw;
+  min-height: 100vh;
+  background: none;
+  box-sizing: border-box;
+  padding-left: max(0px, calc((100vw - 1400px) / 2));
+  padding-right: max(0px, calc((100vw - 1400px) / 2));
 }
 
 .title {
@@ -104,24 +134,28 @@
   box-shadow: 0 4px 24px #e7548033;
   padding: 48px 64px 40px 64px;
   width: 100%;
-  max-width: 800px;
-  margin: 0 32px 32px 32px;
-  display: none;
-  flex: 1;
+  max-width: 1200px;
+  min-width: 340px;
+  margin: 0 auto 32px auto;
+  flex: 1 1 0;
+  align-self: center;
+  /* Allow card to grow on large screens */
+  transition: max-width 0.3s, padding 0.3s;
 }
 
 .card.active {
-  display: block;
+  display: inline-block;
 }
 
 .card.active h2 {
   text-align: left;
   justify-content: flex-start;
+  margin-top: 10px;
 }
 
 .card h2 {
   color: #a259b5;
-  font-size: 1.5rem;
+  font-size: 2.3rem;
   margin-bottom: 18px;
   display: flex;
   align-items: center;
@@ -233,7 +267,8 @@ textarea {
 
 select:focus,
 button:focus,
-textarea:focus {
+textarea:focus,
+input:focus {
   outline: 0;
 }
 
@@ -271,6 +306,105 @@ label[for="feedback"] {
   margin-bottom: 4px;
   margin-top: 16px;
   color: #555;
+}
+
+/* Login Screen Custom Styles */
+.login-outer {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff0f6 0%, #ffe3e3 100%);
+}
+
+.login-card {
+  max-width: 90%;
+  width: 100%;
+  margin: 15vh auto 15vh auto;
+  padding: 40px 36px 32px 36px;
+  border-radius: 22px;
+  box-shadow: 0px 1px 35px 5px #e7548033;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: #fff;
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .login-card {
+    margin: 3vh auto 3vh auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-card {
+    margin: 1.5vh auto 1.5vh auto;
+  }
+}
+
+.login-title {
+  color: #e75480;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.login-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-fields label {
+  color: #a259b5;
+  font-weight: 500;
+  margin-bottom: 2px;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.login-fields input[type="text"],
+.login-fields input[type="password"] {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e75480;
+  background: #fff0f6;
+  color: #a259b5;
+  font-size: 1.08rem;
+  margin-bottom: 2px;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+.login-btn {
+  margin-top: 18px;
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 14px 0;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #e75480 60%, #f67280 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px #e7548033;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.login-btn:hover {
+  background: #e75480;
+}
+
+.login-loading-msg {
+  text-align: center;
+  color: #a259b5;
+  font-size: 1.5rem;
+  margin-top: 10px;
+  letter-spacing: 0.01em;
 }
 
 /* Responsive Design */
