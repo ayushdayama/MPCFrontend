@@ -6,6 +6,7 @@ import Navigation from "./components/Navigation";
 import PredictionView from "./components/PredictionView";
 import FeedbackView from "./components/FeedbackView";
 import TrainView from "./components/TrainView";
+import AddCycleDateView from "./components/AddCycleDateView";
 import { API_BASE_URL } from "./utils/constants";
 
 function App() {
@@ -119,6 +120,7 @@ function App() {
       <Header onLogout={handleLogout} />
       <Navigation view={view} setView={setView} />
       {view === "main" && <PredictionView username={username} />}
+      {view === "addcycle" && <AddCycleDateView username={username} />}
       {view === "feedback" && <FeedbackView username={username} />}
       {view === "train" && <TrainView username={username} />}
     </div>
