@@ -4,6 +4,7 @@ import LoginForm from "./components/LoginForm";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PredictionView from "./components/PredictionView";
+import WelcomeInfo from "./components/WelcomeInfo";
 import FeedbackView from "./components/FeedbackView";
 import TrainView from "./components/TrainView";
 import AddCycleDateView from "./components/AddCycleDateView";
@@ -21,6 +22,10 @@ function App() {
   // Sign up state
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupError, setSignupError] = useState("");
+  // Show welcome info tile only once per login
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return localStorage.getItem("cycleSenseWelcomeShown") !== "true";
+  });
 
   // Login logic
   const handleLogin = async (e) => {
@@ -44,6 +49,8 @@ function App() {
       setLoginUser("");
       setLoginPass("");
       setLoginError("");
+      setShowWelcome(true);
+      localStorage.removeItem("cycleSenseWelcomeShown");
 
       // Trigger train endpoint after successful login
       fetch(`${API_BASE_URL}/train/${loginUser}`, {
@@ -82,6 +89,8 @@ function App() {
       setLoginPass("");
       setLoginError("");
       setSignupError("");
+      setShowWelcome(true);
+      localStorage.removeItem("cycleSenseWelcomeShown");
       // Optionally, trigger train endpoint
       fetch(`${API_BASE_URL}/train/${user}`, {
         method: "POST",
@@ -96,6 +105,8 @@ function App() {
   const handleLogout = () => {
     setUsername("");
     localStorage.removeItem("cycleSenseUser");
+    setShowWelcome(false);
+    localStorage.removeItem("cycleSenseWelcomeShown");
   };
 
   if (!username) {
@@ -115,14 +126,29 @@ function App() {
     );
   }
 
+  // Show welcome info tile only once per login, hide on any navigation
+  const handleNav = (v) => {
+    if (showWelcome) {
+      setShowWelcome(false);
+      localStorage.setItem("cycleSenseWelcomeShown", "true");
+    }
+    setView(v);
+  };
+
   return (
     <div className="container menstrual-theme">
       <Header onLogout={handleLogout} />
-      <Navigation view={view} setView={setView} />
-      {view === "main" && <PredictionView username={username} />}
-      {view === "addcycle" && <AddCycleDateView username={username} />}
-      {view === "feedback" && <FeedbackView username={username} />}
-      {view === "train" && <TrainView username={username} />}
+      {!showWelcome && <Navigation view={view} setView={handleNav} />}
+      {showWelcome ? (
+        <WelcomeInfo username={username} onClose={() => { setShowWelcome(false); localStorage.setItem("cycleSenseWelcomeShown", "true"); }} />
+      ) : (
+        <>
+          {view === "main" && <PredictionView username={username} />}
+          {view === "addcycle" && <AddCycleDateView username={username} />}
+          {view === "feedback" && <FeedbackView username={username} />}
+          {view === "train" && <TrainView username={username} />}
+        </>
+      )}
     </div>
   );
 }
