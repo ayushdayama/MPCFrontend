@@ -30,12 +30,15 @@ function FeedbackView({ username }) {
           comment: feedback,
         }),
       });
-      setFeedbackResult(data.message);
-      setFeedback("");
-      setPredictedDate("");
-      setActualDate("");
-
-      fetch(`${API_BASE_URL}/train/${loginUser}`, {
+      if (data && data.message && data.message.toLowerCase().includes("feedback received")) {
+        setFeedbackResult("Feedback submitted successfully.");
+        setFeedback("");
+        setPredictedDate("");
+        setActualDate("");
+      } else {
+        setFeedbackResult("Failed to submit feedback.");
+      }
+      fetch(`${API_BASE_URL}/train/${username}`, {
         method: "POST",
       });
     } catch (e) {

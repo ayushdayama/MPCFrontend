@@ -55,7 +55,7 @@ function App() {
   };
 
   // Signup logic
-  const handleSignup = async (user, pass, customError) => {
+  const handleSignup = async (user, pass, customError, securityQuestion, securityAnswer) => {
     setSignupError("");
     if (customError) {
       setSignupError(customError);
@@ -66,7 +66,7 @@ function App() {
       const res = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: user, password: pass }),
+        body: JSON.stringify({ username: user, password: pass, securityQuestion, securityAnswer }),
       });
       setSignupLoading(false);
       if (!res.ok) {
