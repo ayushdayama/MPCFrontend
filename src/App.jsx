@@ -63,7 +63,13 @@ function App() {
   };
 
   // Signup logic
-  const handleSignup = async (user, pass, customError, securityQuestion, securityAnswer) => {
+  const handleSignup = async (
+    user,
+    pass,
+    customError,
+    securityQuestion,
+    securityAnswer
+  ) => {
     setSignupError("");
     if (customError) {
       setSignupError(customError);
@@ -74,7 +80,12 @@ function App() {
       const res = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: user, password: pass, securityQuestion, securityAnswer }),
+        body: JSON.stringify({
+          username: user,
+          password: pass,
+          securityQuestion,
+          securityAnswer,
+        }),
       });
       setSignupLoading(false);
       if (!res.ok) {
@@ -140,7 +151,13 @@ function App() {
       <Header onLogout={handleLogout} />
       {!showWelcome && <Navigation view={view} setView={handleNav} />}
       {showWelcome ? (
-        <WelcomeInfo username={username} onClose={() => { setShowWelcome(false); localStorage.setItem("cycleSenseWelcomeShown", "true"); }} />
+        <WelcomeInfo
+          username={username}
+          onClose={() => {
+            setShowWelcome(false);
+            localStorage.setItem("cycleSenseWelcomeShown", "true");
+          }}
+        />
       ) : (
         <>
           {view === "main" && <PredictionView username={username} />}
