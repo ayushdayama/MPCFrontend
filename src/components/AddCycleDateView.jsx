@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { CalendarHeart, Laugh } from "lucide-react";
+import { CalendarHeart, Laugh, Sparkles, HeartHandshake } from "lucide-react";
 import { apiBase, apiFetch } from "../utils/api";
 
 function AddCycleDateView({ username }) {
   const [date, setDate] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleAddDate = async () => {
     if (!date) {
@@ -19,7 +20,7 @@ function AddCycleDateView({ username }) {
     selected.setHours(0, 0, 0, 0);
     if (selected > today) {
       setResult(
-        <span style={{ display: "ruby", alignItems: "center", verticalAlign: "middle" }}>
+        <span style={{ display: "flex", alignItems: "center", verticalAlign: "middle" }}>
           <Laugh color="#e75480" size={20} style={{ marginRight: 4, marginBottom: 2 }} />
           Happy to see you optimistic, but please select a date in the past or today.
         </span>
@@ -27,7 +28,7 @@ function AddCycleDateView({ username }) {
       return;
     }
     setLoading(true);
-    setResult("Submitting...");
+    setResult("Logging your cycle date...");
     try {
       const res = await apiFetch(`${apiBase}/add-cycle-date/${username}`, {
         method: "POST",
@@ -35,69 +36,108 @@ function AddCycleDateView({ username }) {
         body: JSON.stringify({ date }),
       });
       if (res && res.message && res.message.toLowerCase().includes("added")) {
-        setResult("Cycle date added successfully.");
+        setResult("Cycle date logged successfully! 🌸");
         setDate("");
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
       } else {
-        setResult("Failed to add cycle date.");
+        setResult("Failed to log cycle date.");
       }
     } catch (e) {
-      setResult("Failed to add cycle date.");
+      setResult("Failed to log cycle date.");
     }
     setLoading(false);
   };
 
   return (
-    <div className="view card active">
-      <h2 style={{ color: "#e75480", fontWeight: 700, marginBottom: 30 }}>
-        <CalendarHeart
-          size={22}
-          style={{ marginRight: 6, verticalAlign: "middle" }}
-        />
-        Add New Cycle Date
+    <div className="view card active" style={{ position: 'relative' }}>
+      {showConfetti && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          background: 'radial-gradient(circle, #ffe3e3 0%, transparent 70%)',
+          animation: 'fadeOut 3s ease-out',
+          zIndex: 10
+        }}>
+          <Sparkles size={50} color="#e75480" style={{ position: 'absolute', top: '20%', left: '20%' }} />
+          <HeartHandshake size={40} color="#a259b5" style={{ position: 'absolute', top: '30%', right: '25%' }} />
+          <Sparkles size={30} color="#e75480" style={{ position: 'absolute', bottom: '25%', left: '30%' }} />
+        </div>
+      )}
+      <h2 style={{ color: "#e75480", fontWeight: 700, marginBottom: 20, textAlign: 'center' }}>
+        <CalendarHeart size={28} style={{ marginRight: 8, verticalAlign: "middle" }} />
+        Log Your Cycle Date
       </h2>
-      <input
-        type="date"
-        id="cycle_date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        style={{
-          borderRadius: 20,
-          padding: "8px 12px",
-          fontSize: 16,
-          background: "#fff0f6",
-          color: "#e75480",
-          border: "1px solid #e75480",
-          outline: "none",
-          boxShadow: "0 0 0 2px #f8bbd0",
-          transition: "box-shadow 0.2s",
-          fontWeight: 600,
-          marginBottom: 16,
-          width: "100%",
-        }}
-        disabled={loading}
-      />
-      <button
-        className="primary-btn"
-        style={{
-          width: "100%",
-          fontWeight: 600,
-          background: "#e75480",
-          color: "#fff",
-          border: "none",
-          marginTop: 0,
-          borderRadius: 20,
-        }}
-        onClick={handleAddDate}
-        disabled={loading}
-      >
-        Add Cycle Date
-      </button>
+      <p style={{ textAlign: 'center', color: '#666', marginBottom: 30 }}>
+        Mark the start of your menstrual cycle. Tracking helps with predictions! 💖
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #fff0f6 0%, #ffe3e3 100%)',
+          borderRadius: '20px',
+          padding: '20px',
+          boxShadow: '0 4px 16px #e7548022',
+          border: '2px solid #e75480',
+          maxWidth: '300px',
+          width: '100%'
+        }}>
+          <label style={{ display: 'block', textAlign: 'center', marginBottom: 10, fontWeight: 600, color: '#e75480' }}>
+            Select Date
+          </label>
+          <input
+            type="date"
+            id="cycle_date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            style={{
+              borderRadius: 15,
+              padding: "12px 16px",
+              fontSize: 18,
+              background: "#fff",
+              color: "#e75480",
+              border: "2px solid #e75480",
+              outline: "none",
+              boxShadow: "0 0 0 3px #f8bbd0",
+              transition: "box-shadow 0.2s",
+              fontWeight: 600,
+              width: "100%",
+              textAlign: 'center'
+            }}
+            disabled={loading}
+          />
+        </div>
+      </div>
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <button
+          className="primary-btn"
+          style={{
+            fontWeight: 600,
+            background: "#e75480",
+            color: "#fff",
+            border: "none",
+            padding: "12px 24px",
+            borderRadius: 25,
+            fontSize: 16,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1
+          }}
+          onClick={handleAddDate}
+          disabled={loading}
+        >
+          {loading ? "Logging..." : "Log Cycle Date"} <HeartHandshake size={18} style={{ marginLeft: 6 }} />
+        </button>
+      </div>
       <div
         style={{
-          marginTop: 16,
+          textAlign: 'center',
           minHeight: 24,
           color: typeof result === "string" && result.includes("success") ? "#2e7d32" : "#e75480",
           fontWeight: 500,
+          fontSize: 16
         }}
       >
         {result}
