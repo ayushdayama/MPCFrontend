@@ -4,6 +4,8 @@ import LoginForm from "./components/LoginForm";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PredictionView from "./components/PredictionView";
+import TrainModelView from "./components/TrainModelView";
+import DateHistoryView from "./components/DateHistoryView";
 import WelcomeInfo from "./components/WelcomeInfo";
 import AddCycleDateView from "./components/AddCycleDateView";
 import { API_BASE_URL } from "./utils/constants";
@@ -151,6 +153,8 @@ function App() {
         <>
           {view === "main" && <PredictionView username={username} />}
           {view === "addcycle" && <AddCycleDateView username={username} />}
+          {view === "train" && <TrainModelView />}
+          {view === "history" && <DateHistoryView username={username} />}
         </>
       )}
     </div>

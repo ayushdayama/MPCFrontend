@@ -12,6 +12,20 @@
     gap: 8px;
   }
 }
+
+/* Responsive row for train model buttons */
+.train-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .train-btn-group {
+    flex-direction: column;
+  }
+}
 /* Ultra-wide screens: make card even wider and center it */
 @media (min-width: 1600px) {
   .card {
@@ -132,7 +146,7 @@ body,
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 4px 24px #e7548033;
-  padding: 48px 64px 40px 64px;
+  padding: 3rem clamp(1rem, 8vw, 4rem) 2.5rem clamp(1rem, 8vw, 4rem);
   width: 100%;
   max-width: 1200px;
   min-width: 340px;
