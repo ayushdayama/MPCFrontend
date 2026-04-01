@@ -1,10 +1,34 @@
 import React, { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { format } from "date-fns";
+import { format, parseISO, parse } from "date-fns";
 import { Calendar, CalendarHeart, Sparkles, Heart, CalendarSearch } from "lucide-react";
 import MonthYearPicker from "./date-pickers/MonthYearPicker";
 import ResultDisplay from "./common/ResultDisplay";
 import { apiBase, apiFetch } from "../utils/api";
+
+function normalizeDate(input) {
+  if (!input) return "";
+  let d;
+  try {
+    d = parseISO(input);
+    if (!isNaN(d.getTime())) return format(d, "dd-MMM-yyyy");
+  } catch (e) {
+    // swallow
+  }
+  try {
+    d = parse(input, "dd-MMM-yyyy", new Date());
+    if (!isNaN(d.getTime())) return format(d, "dd-MMM-yyyy");
+  } catch (e) {
+    // swallow
+  }
+  try {
+    d = parse(input, "yyyy-MM-dd", new Date());
+    if (!isNaN(d.getTime())) return format(d, "dd-MMM-yyyy");
+  } catch (e) {
+    // swallow
+  }
+  return input;
+}
 
 function PredictionView({ username }) {
   const [result, setResult] = useState("");
@@ -22,11 +46,11 @@ function PredictionView({ username }) {
       const lastDate = allDates.length ? allDates[allDates.length - 1] : null;
       const data = await apiFetch(`${apiBase}/predict/${username}`);
       let html = "";
-      if (lastDate) html += `<b>Last recorded cycle date:</b> ${lastDate}<br>`;
+      if (lastDate) html += `<b>Last recorded cycle date:</b> ${normalizeDate(lastDate)}<br>`;
       if (data.top_dates && data.top_dates.length > 0) {
-        html += `<b>Most confident prediction:</b> ${data.top_dates[0]}<br>`;
+        html += `<b>Most confident prediction:</b> ${normalizeDate(data.top_dates[0])}<br>`;
         if (data.top_dates.length > 1) {
-          html += `<span style='color:orange'><b>Other possible dates (less likely):</b><br>${data.top_dates.slice(1).join("<br>")}</span>`;
+          html += `<span style='color:orange'><b>Other possible dates (less likely):</b><br>${data.top_dates.slice(1).map(normalizeDate).join("<br>")}</span>`;
         }
       } else {
         html += "No prediction available.";
@@ -52,8 +76,12 @@ function PredictionView({ username }) {
       let html = "";
       if (lastDate) html += `<b>Last recorded cycle date:</b> ${lastDate}<br>`;
       if (data.top_dates && data.top_dates.length > 0) {
-        const lastDateObj = new Date(lastDate);
-        const intervals = data.top_dates.map((d) => (new Date(d) - lastDateObj) / (1000 * 60 * 60 * 24));
+        const lastDateObj = parseISO(lastDate) || parse(lastDate, "dd-MMM-yyyy", new Date());
+        const intervals = data.top_dates.map((d) => {
+          const p = parseISO(d);
+          const candidate = isNaN(p.getTime()) ? parse(d, "dd-MMM-yyyy", new Date()) : p;
+          return (candidate - lastDateObj) / (1000 * 60 * 60 * 24);
+        });
         let predictions = [[], [], []];
         for (let i = 0; i < 24; ++i) {
           for (let j = 0; j < intervals.length; ++j) {
@@ -61,16 +89,16 @@ function PredictionView({ username }) {
             const y = next.getFullYear();
             const m = (next.getMonth() + 1).toString().padStart(2, "0");
             if (`${y}-${m}` === month) {
-              predictions[j].push(next.toISOString().slice(0, 10));
+              predictions[j].push(next);
             }
           }
         }
-        predictions = predictions.map((group) => group.sort());
+        predictions = predictions.map((group) => group.sort((a, b) => a - b));
         if (predictions[0].length) {
-          html += `<b>Most confident prediction(s) for ${month}:</b><br>${predictions[0].join("<br>")}<br>`;
+          html += `<b>Most confident prediction(s) for ${month}:</b><br>${predictions[0].map(d => normalizeDate(d.toISOString().slice(0,10))).join("<br>")}<br>`;
         }
         if (predictions[1].length || predictions[2].length) {
-          html += `<span style='color:orange'><b>Other possible dates (less likely):</b><br>${[...predictions[1], ...predictions[2]].sort().join("<br>")}</span>`;
+          html += `<span style='color:orange'><b>Other possible dates (less likely):</b><br>${[...predictions[1], ...predictions[2]].sort((a, b) => a - b).map(d => normalizeDate(d.toISOString().slice(0,10))).join("<br>")}</span>`;
         }
       } else {
         html += "No prediction available.";
