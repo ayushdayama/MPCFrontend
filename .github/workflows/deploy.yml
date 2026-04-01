@@ -32,7 +32,7 @@ jobs:
 
       - name: Build
         env:
-          VITE_API_BASE_URL: ${{ secrets.BACKEND_URL }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
       - name: Setup Pages
@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
-  
+
   deploy:
     environment:
       name: github-pages
