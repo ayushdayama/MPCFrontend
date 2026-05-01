@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CalendarDays, Heart, TrendingUp, Calendar, Sparkles } from "lucide-react";
 import { apiBase, apiFetch } from "../utils/api";
+import LoadingSpinner from "./common/LoadingSpinner";
 
 function DateHistoryView({ username }) {
   const [dates, setDates] = useState([]);
@@ -37,7 +38,13 @@ function DateHistoryView({ username }) {
 
   const stats = calculateStats();
 
-  if (loading) return <div className="view card active"><p>Loading your cycle journey...</p></div>;
+  if (loading) return (
+    <div className="view card active" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '240px' }}>
+      <LoadingSpinner />
+      <p style={{ marginTop: 16, color: '#e75480', fontSize: '1.05rem', fontWeight: 600 }}>Loading your cycle journey...</p>
+      <p style={{ marginTop: 8, color: '#666', fontSize: '0.95rem' }}>Fetching your logged cycle dates and stats.</p>
+    </div>
+  );
   if (error) return <div className="view card active"><p>{error}</p></div>;
 
   return (

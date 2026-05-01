@@ -81,11 +81,11 @@ function AddCycleDateView({ username }) {
           borderRadius: '20px',
           padding: '20px',
           boxShadow: '0 4px 16px #e7548022',
-          border: '2px solid #e75480',
+          border: '1px solid #e75480',
           maxWidth: '300px',
           width: '100%'
         }}>
-          <label style={{ display: 'block', textAlign: 'center', marginBottom: 10, fontWeight: 600, color: '#e75480' }}>
+          <label htmlFor="cycle_date" style={{ display: 'block', textAlign: 'center', marginBottom: 10, fontWeight: 600, color: '#e75480' }}>
             Select Date
           </label>
           <input
@@ -99,7 +99,7 @@ function AddCycleDateView({ username }) {
               fontSize: 18,
               background: "#fff",
               color: "#e75480",
-              border: "2px solid #e75480",
+              border: "1px solid #e75480",
               outline: "none",
               boxShadow: "0 0 0 3px #f8bbd0",
               transition: "box-shadow 0.2s",
