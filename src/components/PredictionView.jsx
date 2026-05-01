@@ -71,7 +71,11 @@ function PredictionView({ username }) {
       let html = "";
       if (lastDate) html += `<b>Last recorded cycle date:</b> ${lastDate}<br>`;
       if (data.top_dates && data.top_dates.length > 0) {
-        const lastDateObj = parseISO(lastDate) || parse(lastDate, "dd-MMM-yyyy", new Date());
+        // Parse lastDate in dd-MMM-yyyy format
+        let lastDateObj = parse(lastDate, "dd-MMM-yyyy", new Date());
+        if (isNaN(lastDateObj.getTime())) {
+          lastDateObj = parseISO(lastDate);
+        }
         const intervals = data.top_dates.map((d) => {
           const p = parseISO(d);
           const candidate = isNaN(p.getTime()) ? parse(d, "dd-MMM-yyyy", new Date()) : p;
