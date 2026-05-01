@@ -41,16 +41,13 @@ function PredictionView({ username }) {
   const handlePredict = async () => {
     setResult("Loading...");
     try {
-      const cycleData = await apiFetch(`${apiBase}/cycle_data/${username}`);
-      const allDates = cycleData.dates;
-      const lastDate = allDates.length ? allDates[allDates.length - 1] : null;
       const data = await apiFetch(`${apiBase}/predict/${username}`);
       let html = "";
-      if (lastDate) html += `<b>Last recorded cycle date:</b> ${normalizeDate(lastDate)}<br>`;
+      if (data.last_date) html += `<b>Last recorded cycle date:</b> ${data.last_date}<br>`;
       if (data.top_dates && data.top_dates.length > 0) {
-        html += `<b>Most confident prediction:</b> ${normalizeDate(data.top_dates[0])}<br>`;
+        html += `<b>Most confident prediction:</b> ${data.top_dates[0]}<br>`;
         if (data.top_dates.length > 1) {
-          html += `<span style='color:orange'><b>Other possible dates (less likely):</b><br>${data.top_dates.slice(1).map(normalizeDate).join("<br>")}</span>`;
+          html += `<span style='color:orange'><b>Other possible dates (less likely):</b><br>${data.top_dates.slice(1).join("<br>")}</span>`;
         }
       } else {
         html += "No prediction available.";
@@ -69,10 +66,8 @@ function PredictionView({ username }) {
     }
     setMonthResult("Loading...");
     try {
-      const cycleData = await apiFetch(`${apiBase}/cycle_data/${username}`);
-      const allDates = cycleData.dates;
-      const lastDate = allDates.length ? allDates[allDates.length - 1] : null;
       const data = await apiFetch(`${apiBase}/predict/${username}`);
+      const lastDate = data.last_date;
       let html = "";
       if (lastDate) html += `<b>Last recorded cycle date:</b> ${lastDate}<br>`;
       if (data.top_dates && data.top_dates.length > 0) {
