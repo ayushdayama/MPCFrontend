@@ -32,16 +32,57 @@ function normalizeDate(input) {
 
 function PredictionView({ username }) {
   const [result, setResult] = useState("");
+  const [currentPrediction, setCurrentPrediction] = useState(null);
+  const [showFertilityDetails, setShowFertilityDetails] = useState(false);
   const [month, setMonthState] = useState("");
   const [monthResult, setMonthResult] = useState("");
   const [monthCalendarOpen, setMonthCalendarOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState(month ? new Date(month + "-01") : new Date());
 
+  const parseAnyDate = (value) => {
+    if (!value) return null;
+    let date = parseISO(value);
+    if (!isNaN(date.getTime())) return date;
+    date = parse(value, "dd-MMM-yyyy", new Date());
+    if (!isNaN(date.getTime())) return date;
+    date = parse(value, "yyyy-MM-dd", new Date());
+    if (!isNaN(date.getTime())) return date;
+    return null;
+  };
+
+  const getFertilityWindow = (dateString) => {
+    const nextDate = parseAnyDate(dateString);
+    if (!nextDate) return null;
+    const peak = new Date(nextDate);
+    peak.setDate(peak.getDate() - 14);
+    const start = new Date(nextDate);
+    start.setDate(start.getDate() - 16);
+    const end = new Date(nextDate);
+    end.setDate(end.getDate() - 12);
+    return {
+      start: format(start, "dd-MMM-yyyy"),
+      peak: format(peak, "dd-MMM-yyyy"),
+      end: format(end, "dd-MMM-yyyy"),
+    };
+  };
+
+  const buildFertilitySummary = (prediction) => {
+    if (!prediction?.top_dates?.length) return null;
+    const window = getFertilityWindow(prediction.top_dates[0]);
+    if (!window) return null;
+    return window;
+  };
+
+  const fertilityWindow = buildFertilitySummary(currentPrediction);
+
   // Predict next cycle
   const handlePredict = async () => {
     setResult("Loading...");
+    setCurrentPrediction(null);
+    setShowFertilityDetails(false);
     try {
       const data = await apiFetch(`${apiBase}/predict/${username}`);
+      setCurrentPrediction(data);
       let html = "";
       if (data.last_date) html += `<b>Last recorded cycle date:</b> ${data.last_date}<br>`;
       if (data.top_dates && data.top_dates.length > 0) {
@@ -115,6 +156,45 @@ function PredictionView({ username }) {
         <Calendar size={16} style={{ marginRight: 4 }} /> Get Next Cycle Date
       </button>
       <ResultDisplay html={result} />
+      {fertilityWindow && (
+        <div style={{
+          marginTop: 24,
+          padding: '18px',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(231,84,128,0.08), rgba(124,45,117,0.12))',
+          border: '1px solid rgba(231,84,128,0.28)',
+          color: '#4a1f4f',
+          boxShadow: '0 20px 40px rgba(124,45,117,0.08)',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10, textAlign: 'center' }}>
+                <CalendarHeart color="#e75480" size={20} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 700 }}>Fertility Window</div>
+                  <div style={{ fontSize: '0.9rem', color: '#7a1c67' }}>Interactive ovulation guidance based on your next predicted period.</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 17, flexWrap: 'nowrap', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
+                <div style={{ padding: '12px', borderRadius: '16px', background: '#fff5fb', border: '1px solid rgba(231,84,128,0.18)' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#a64b8f' }}>Window Start</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#e75480' }}>{fertilityWindow.start}</div>
+                </div>
+                <div style={{ padding: '12px', borderRadius: '16px', background: '#fce7f3', border: '1px solid rgba(231,84,128,0.24)' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#a64b8f' }}>Ovulation Peak</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#9c27b0' }}>{fertilityWindow.peak}</div>
+                </div>
+                <div style={{ padding: '12px', borderRadius: '16px', background: '#fff0f6', border: '1px solid rgba(231,84,128,0.18)' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#a64b8f' }}>Window End</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ad1457' }}>{fertilityWindow.end}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <h2><CalendarSearch color="#e75480" size={22} style={{ marginRight: 6 }} /> Predict cycles for a month:</h2>
       <Popover.Root open={monthCalendarOpen} onOpenChange={setMonthCalendarOpen}>
         <Popover.Trigger asChild>
