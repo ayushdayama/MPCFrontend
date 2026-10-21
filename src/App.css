@@ -115,7 +115,98 @@ body,
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  box-sizing: border-box;
+}
+
+.header-actions {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.calendar-sync {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
+  color: #563747;
+}
+
+.calendar-sync__controls {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.calendar-sync__account {
+  color: #563747;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.calendar-sync__button {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #e75480;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #b52c5f;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.calendar-sync__button:hover:not(:disabled) {
+  border-color: #b52c5f;
+  background: #fff0f6;
+}
+
+.calendar-sync__button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.calendar-sync__message {
+  width: 100%;
+  color: #563747;
+  font-size: 0.8125rem;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.logout-button {
+  width: auto;
+  margin: 0;
+  padding: 8px 4px 8px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: #b52c5f;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.logout-button:hover {
+  border-color: transparent;
+  background: #fff0f6;
 }
 
 .nav {
@@ -450,6 +541,21 @@ input:focus {
 @media (max-width: 600px) {
   .theme-switcher {
     padding: 12px 8px 0 8px;
+  }
+
+  .header-actions {
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .calendar-sync {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
+  .calendar-sync__message {
+    text-align: left;
   }
 
   .title {

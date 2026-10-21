@@ -1,26 +1,17 @@
 import { ScanHeart, LogOut } from "lucide-react";
+import CalendarSyncControl from "./CalendarSyncControl";
 
 function Header({ onLogout }) {
   return (
     <>
       <div className="theme-switcher">
-        <button
-          onClick={onLogout}
-          style={{
-            float: "right",
-            background: "none",
-            border: "none",
-            color: "#e75480",
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-          }}
-        >
-          Logout
-          <LogOut />
-        </button>
+        <div className="header-actions">
+          <CalendarSyncControl />
+          <button className="logout-button" onClick={onLogout}>
+            Logout
+            <LogOut size={18} aria-hidden="true" />
+          </button>
+        </div>
       </div>
       <h1
         className="title"

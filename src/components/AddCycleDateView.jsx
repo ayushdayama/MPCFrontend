@@ -35,15 +35,15 @@ function AddCycleDateView({ username }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date }),
       });
-      if (res && res.message && res.message.toLowerCase().includes("added")) {
-        setResult("Cycle date logged successfully! 🌸");
+      if (res?.calendar_sync === "manual_required") {
+        setResult("Cycle date saved to Firebase. Use Sync in the header when you want to update Google Calendar.");
         setDate("");
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 3000);
       } else {
         setResult("Failed to log cycle date.");
       }
-    } catch (e) {
+    } catch {
       setResult("Failed to log cycle date.");
     }
     setLoading(false);

@@ -11,9 +11,14 @@ import AddCycleDateView from "./components/AddCycleDateView";
 import { API_BASE_URL } from "./utils/constants";
 
 function App() {
-  const [username, setUsername] = useState(
-    () => localStorage.getItem("cycleSenseUser") || ""
+  const [authToken, setAuthToken] = useState(
+    () => localStorage.getItem("cycleSenseToken") || ""
   );
+  const [username, setUsername] = useState(() => (
+    localStorage.getItem("cycleSenseToken")
+      ? localStorage.getItem("cycleSenseUser") || ""
+      : ""
+  ));
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -38,20 +43,22 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: loginUser, password: loginPass }),
       });
+      const data = await res.json();
       setLoading(false);
       if (!res.ok) {
-        const err = await res.json();
-        setLoginError(err.detail || "Invalid username or password");
+        setLoginError(data.detail || "Invalid username or password");
         return;
       }
-      setUsername(loginUser);
-      localStorage.setItem("cycleSenseUser", loginUser);
+      setAuthToken(data.access_token);
+      localStorage.setItem("cycleSenseToken", data.access_token);
+      setUsername(data.username);
+      localStorage.setItem("cycleSenseUser", data.username);
       setLoginUser("");
       setLoginPass("");
       setLoginError("");
       setShowWelcome(true);
       localStorage.removeItem("cycleSenseWelcomeShown");
-    } catch (e) {
+    } catch {
       setLoading(false);
       setLoginError("Login failed. Please try again.");
     }
@@ -82,22 +89,24 @@ function App() {
           securityAnswer,
         }),
       });
+      const data = await res.json();
       setSignupLoading(false);
       if (!res.ok) {
-        const err = await res.json();
-        setSignupError(err.detail || "Sign up failed");
+        setSignupError(data.detail || "Sign up failed");
         return;
       }
       // Auto-login after signup
-      setUsername(user);
-      localStorage.setItem("cycleSenseUser", user);
+      setAuthToken(data.access_token);
+      localStorage.setItem("cycleSenseToken", data.access_token);
+      setUsername(data.username);
+      localStorage.setItem("cycleSenseUser", data.username);
       setLoginUser("");
       setLoginPass("");
       setLoginError("");
       setSignupError("");
       setShowWelcome(true);
       localStorage.removeItem("cycleSenseWelcomeShown");
-    } catch (e) {
+    } catch {
       setSignupLoading(false);
       setSignupError("Sign up failed. Please try again.");
     }
@@ -105,13 +114,15 @@ function App() {
 
   // Logout logic
   const handleLogout = () => {
+    setAuthToken("");
     setUsername("");
     localStorage.removeItem("cycleSenseUser");
+    localStorage.removeItem("cycleSenseToken");
     setShowWelcome(false);
     localStorage.removeItem("cycleSenseWelcomeShown");
   };
 
-  if (!username) {
+  if (!username || !authToken) {
     return (
       <LoginForm
         loginUser={loginUser}
