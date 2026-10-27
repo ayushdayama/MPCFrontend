@@ -10,6 +10,7 @@ import WelcomeInfo from "./components/WelcomeInfo";
 import AddCycleDateView from "./components/AddCycleDateView";
 import { API_BASE_URL } from "./utils/constants";
 import { apiFetch, setApiAuthToken } from "./utils/api";
+import { encryptCredentialPayload } from "./utils/passwordEncryption";
 
 function App() {
   const [username, setUsername] = useState("");
@@ -39,7 +40,7 @@ function App() {
   }, []);
 
   // Login logic
-  const handleLogin = async (e) => {
+  const handleLogin = async (e, encrypted) => {
     e.preventDefault();
     setLoginError("");
     setLoading(true);
@@ -48,7 +49,7 @@ function App() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: loginUser, password: loginPass }),
+        body: JSON.stringify({ username: loginUser, encrypted }),
       });
       const data = await res.json();
       setLoading(false);
@@ -83,15 +84,18 @@ function App() {
     }
     setSignupLoading(true);
     try {
+      const encrypted = await encryptCredentialPayload({
+        password: pass,
+        securityAnswer,
+      });
       const res = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: user,
-          password: pass,
           securityQuestion,
-          securityAnswer,
+          encrypted: encrypted.payload,
         }),
       });
       const data = await res.json();

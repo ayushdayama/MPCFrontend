@@ -3,7 +3,8 @@ import { Clock } from "lucide-react";
 import MPCLogo from "../assets/MPCLogo.png";
 
 import { API_BASE_URL } from "../utils/constants";
-import React, { useState } from "react";
+import { encryptCredentialPayload } from "../utils/passwordEncryption";
+import React, { useRef, useState } from "react";
 
 const SECURITY_QUESTIONS = [
   "What is your favorite color?",
@@ -24,9 +25,6 @@ function LoginForm({
   onSignup,
   signupError,
   signupLoading,
-  onForgotPassword,
-  forgotPasswordState,
-  onResetPassword,
 }) {
   const [showSignup, setShowSignup] = useState(false);
   const [signupUser, setSignupUser] = useState("");
@@ -42,6 +40,50 @@ function LoginForm({
   const [forgotStep, setForgotStep] = useState(0); // 0: enter user, 1: answer q, 2: done
   const [forgotError, setForgotError] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [encryptionError, setEncryptionError] = useState("");
+  const loginPasswordValue = useRef(loginPass);
+  const loginEncryption = useRef(null);
+  const loginPasswordVersion = useRef(0);
+
+  const prepareLoginEncryption = (password) => {
+    const entry = {
+      password,
+      version: loginPasswordVersion.current,
+      promise: encryptCredentialPayload({ password }),
+    };
+    loginEncryption.current = entry;
+    entry.promise.catch(() => {
+      if (loginEncryption.current === entry) {
+        setEncryptionError("Could not encrypt the password. Please try again.");
+      }
+    });
+    return entry;
+  };
+
+  const handleLoginSubmit = async (event) => {
+    event.preventDefault();
+    setEncryptionError("");
+    const password = loginPasswordValue.current;
+    let entry = loginEncryption.current;
+
+    try {
+      if (!entry || entry.password !== password) {
+        entry = prepareLoginEncryption(password);
+      }
+      let encrypted = await entry.promise;
+      if (loginPasswordVersion.current !== entry.version) return;
+      if (encrypted.expiresAt <= Date.now()) {
+        entry = prepareLoginEncryption(password);
+        encrypted = await entry.promise;
+      }
+      if (loginPasswordVersion.current !== entry.version) return;
+      loginEncryption.current = null;
+      onLogin(event, encrypted.payload);
+    } catch {
+      loginEncryption.current = null;
+      setEncryptionError("Could not encrypt the password. Please try again.");
+    }
+  };
 
   const handleSignup = (e) => {
     e.preventDefault();
@@ -92,13 +134,16 @@ function LoginForm({
     setForgotError("");
     setForgotLoading(true);
     try {
+      const encrypted = await encryptCredentialPayload({
+        securityAnswer: forgotAnswer,
+        newPassword: forgotNewPass,
+      });
       const res = await fetch(`${API_BASE_URL}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: forgotUser,
-          securityAnswer: forgotAnswer,
-          newPassword: forgotNewPass,
+          encrypted: encrypted.payload,
         }),
       });
       if (!res.ok) {
@@ -117,7 +162,7 @@ function LoginForm({
   return (
     <div className="login-outer menstrual-theme">
       <form
-        onSubmit={showSignup ? handleSignup : onLogin}
+        onSubmit={showSignup ? handleSignup : showForgot ? (event) => event.preventDefault() : handleLoginSubmit}
         className="login-card card"
       >
         <div
@@ -372,12 +417,28 @@ function LoginForm({
                 id="loginPass"
                 type="password"
                 value={loginPass}
-                onChange={(e) => setLoginPass(e.target.value)}
+                onChange={(e) => {
+                  loginPasswordVersion.current += 1;
+                  loginPasswordValue.current = e.target.value;
+                  loginEncryption.current = null;
+                  setLoginPass(e.target.value);
+                }}
+                onFocus={() => {
+                  loginPasswordVersion.current += 1;
+                  loginEncryption.current = null;
+                }}
+                onBlur={(e) => {
+                  setEncryptionError("");
+                  if (e.currentTarget.value) {
+                    prepareLoginEncryption(e.currentTarget.value);
+                  }
+                }}
                 required
                 autoComplete="current-password"
                 disabled={loading}
               />
               {loginError && <ErrorMessage message={loginError} />}
+              {encryptionError && <ErrorMessage message={encryptionError} />}
             </>
           )}
         </div>
