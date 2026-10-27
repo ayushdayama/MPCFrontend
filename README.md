@@ -31,13 +31,13 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 
 ## Configure backend 🔧
 
-Set the backend base URL (defaults to `http://127.0.0.1:8000`):
+For local Vite development, set the backend base URL (defaults to `http://127.0.0.1:8000`):
 
 ```powershell
 setx VITE_API_BASE_URL "http://127.0.0.1:8000"
 ```
 
-Restart `npm run dev` after changing env vars.
+Restart `npm run dev` after changing env vars. Production builds always use the same-origin `/api` Pages Function, regardless of `VITE_API_BASE_URL`.
 
 ## Build / lint 🛠️
 
