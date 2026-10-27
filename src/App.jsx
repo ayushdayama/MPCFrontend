@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import "./App.css";
 import LoginForm from "./components/LoginForm";
 import Header from "./components/Header";
@@ -9,16 +9,11 @@ import DateHistoryView from "./components/DateHistoryView";
 import WelcomeInfo from "./components/WelcomeInfo";
 import AddCycleDateView from "./components/AddCycleDateView";
 import { API_BASE_URL } from "./utils/constants";
+import { apiFetch, setApiAuthToken } from "./utils/api";
 
 function App() {
-  const [authToken, setAuthToken] = useState(
-    () => localStorage.getItem("cycleSenseToken") || ""
-  );
-  const [username, setUsername] = useState(() => (
-    localStorage.getItem("cycleSenseToken")
-      ? localStorage.getItem("cycleSenseUser") || ""
-      : ""
-  ));
+  const [username, setUsername] = useState("");
+  const [authLoading, setAuthLoading] = useState(true);
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -27,10 +22,21 @@ function App() {
   // Sign up state
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupError, setSignupError] = useState("");
-  // Show welcome info tile only once per login
-  const [showWelcome, setShowWelcome] = useState(() => {
-    return localStorage.getItem("cycleSenseWelcomeShown") !== "true";
-  });
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    localStorage.removeItem("cycleSenseToken");
+    localStorage.removeItem("cycleSenseUser");
+    localStorage.removeItem("cycleSenseWelcomeShown");
+
+    apiFetch(`${API_BASE_URL}/auth/me`)
+      .then((data) => {
+        setUsername(data.username);
+        setShowWelcome(true);
+      })
+      .catch(() => {})
+      .finally(() => setAuthLoading(false));
+  }, []);
 
   // Login logic
   const handleLogin = async (e) => {
@@ -40,6 +46,7 @@ function App() {
     try {
       const res = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: loginUser, password: loginPass }),
       });
@@ -49,15 +56,12 @@ function App() {
         setLoginError(data.detail || "Invalid username or password");
         return;
       }
-      setAuthToken(data.access_token);
-      localStorage.setItem("cycleSenseToken", data.access_token);
+      setApiAuthToken(data.access_token);
       setUsername(data.username);
-      localStorage.setItem("cycleSenseUser", data.username);
       setLoginUser("");
       setLoginPass("");
       setLoginError("");
       setShowWelcome(true);
-      localStorage.removeItem("cycleSenseWelcomeShown");
     } catch {
       setLoading(false);
       setLoginError("Login failed. Please try again.");
@@ -81,6 +85,7 @@ function App() {
     try {
       const res = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: user,
@@ -96,16 +101,13 @@ function App() {
         return;
       }
       // Auto-login after signup
-      setAuthToken(data.access_token);
-      localStorage.setItem("cycleSenseToken", data.access_token);
+      setApiAuthToken(data.access_token);
       setUsername(data.username);
-      localStorage.setItem("cycleSenseUser", data.username);
       setLoginUser("");
       setLoginPass("");
       setLoginError("");
       setSignupError("");
       setShowWelcome(true);
-      localStorage.removeItem("cycleSenseWelcomeShown");
     } catch {
       setSignupLoading(false);
       setSignupError("Sign up failed. Please try again.");
@@ -114,15 +116,20 @@ function App() {
 
   // Logout logic
   const handleLogout = () => {
-    setAuthToken("");
+    setApiAuthToken("");
+    if (API_BASE_URL.startsWith("/")) {
+      fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "same-origin",
+      }).catch(() => {});
+    }
     setUsername("");
-    localStorage.removeItem("cycleSenseUser");
-    localStorage.removeItem("cycleSenseToken");
     setShowWelcome(false);
-    localStorage.removeItem("cycleSenseWelcomeShown");
   };
 
-  if (!username || !authToken) {
+  if (authLoading) return null;
+
+  if (!username) {
     return (
       <LoginForm
         loginUser={loginUser}
@@ -143,7 +150,6 @@ function App() {
   const handleNav = (v) => {
     if (showWelcome) {
       setShowWelcome(false);
-      localStorage.setItem("cycleSenseWelcomeShown", "true");
     }
     setView(v);
   };
@@ -157,7 +163,6 @@ function App() {
           username={username}
           onClose={() => {
             setShowWelcome(false);
-            localStorage.setItem("cycleSenseWelcomeShown", "true");
           }}
         />
       ) : (

@@ -16,7 +16,7 @@ Cycle Sense helps users **log menstrual cycle start dates**, **view history + ba
 
 - **End users** tracking cycles and viewing predictions 🙋‍♀️
 - **Developers** running the UI locally against the Cycle Sense backend 🧑‍💻
-- **GitHub Pages** deployments for a static frontend (backend hosted elsewhere) 🚀
+- **Cloudflare Pages** deployments using a same-origin API proxy 🚀
 
 ## Clone, install, run 🧩
 
@@ -47,20 +47,18 @@ npm run preview
 npm run lint
 ```
 
-## Deploy (GitHub Pages) 🌐
+## Deploy (Cloudflare Pages) 🌐
 
-This repo deploys to GitHub Pages with `gh-pages`:
+Build the static UI and Pages Function with:
 
 ```bash
-npm run deploy
+npm run build:cloudflare
 ```
 
-If you deploy under a different repo path/name, update:
+Set the `RENDER_API_ORIGIN` Pages environment variable to the HTTPS origin of the backend. The `/api` Pages Function proxies API requests to it.
 
-- `vite.config.js` `base`
-- `package.json` `homepage`
+## Session security 🔐
 
-## Notes 🧾
+Cloudflare deployments store the session in a 24-hour `HttpOnly`, `Secure`, `SameSite=Lax` cookie; the JWT is not exposed to frontend JavaScript or stored in LocalStorage. Logout clears the cookie. Legacy `cycleSenseToken`, `cycleSenseUser`, and `cycleSenseWelcomeShown` LocalStorage entries are removed when the app loads.
 
-- **Backend must allow CORS** for your UI origin (localhost or GitHub Pages). 🌍
-- The UI persists the username in `localStorage` as `cycleSenseUser` (no token auth on the frontend). 🗝️
+For local development against a directly hosted backend, the JWT remains in memory only and is lost on reload. Configure backend CORS for the local UI origin when using this mode.
